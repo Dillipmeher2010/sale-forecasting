@@ -20,6 +20,7 @@ if st.button("Download Sample Excel"):
     sample_file = "sample_sales_data.xlsx"
     sample_df.to_excel(sample_file, index=False)
     st.success(f"Sample file '{sample_file}' is ready for download.")
+    # Use the file uploader method to allow downloading
     st.markdown(f"[Download Sample Excel](./{sample_file})", unsafe_allow_html=True)
 
 # File upload
@@ -34,9 +35,12 @@ if st.button("Process"):
         # Check for required columns
         if 'Month' in df.columns and 'Sales Amt' in df.columns:
             # Prepare the data for Prophet
-            df['Month'] = pd.to_datetime(df['Month'], format='%b-%y')
+            df['Month'] = pd.to_datetime(df['Month'], format='%b-%y', errors='coerce')
             df.rename(columns={'Month': 'ds', 'Sales Amt': 'y'}, inplace=True)
-            
+
+            # Drop rows with NaT values if date conversion failed
+            df = df.dropna()
+
             # Fit the Prophet model
             model = Prophet()
             model.fit(df)
