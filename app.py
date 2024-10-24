@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from prophet import Prophet
+import os
 
 # Create a sample DataFrame for the Excel file
 sample_data = {
@@ -19,7 +20,13 @@ st.title("Sales Forecasting App")
 st.write("Upload your sales data in the format of the sample file below:")
 
 # Display download link for the sample file
-st.markdown(f"[Download Sample Sales Data](./{sample_file_path})", unsafe_allow_html=True)
+with open(sample_file_path, "rb") as f:
+    st.download_button(
+        label="Download Sample Sales Data",
+        data=f,
+        file_name=sample_file_path,
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
 
 # File upload section
 uploaded_file = st.file_uploader("Upload your Excel file", type=["xlsx"])
@@ -63,7 +70,14 @@ if uploaded_file is not None:
             # Save the forecasting results to a new Excel file for download
             forecast_file = "forecasted_sales_data.xlsx"
             forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].to_excel(forecast_file, index=False)
-            st.success("Forecasting data is ready for download.")
-            st.markdown(f"[Download Forecasting Data](./{forecast_file})", unsafe_allow_html=True)
+
+            # Create a download button for the forecasting results
+            with open(forecast_file, "rb") as f:
+                st.download_button(
+                    label="Download Forecasting Data",
+                    data=f,
+                    file_name=forecast_file,
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
     else:
         st.error("Uploaded file must contain 'Month' and 'Sales Amt' columns.")
